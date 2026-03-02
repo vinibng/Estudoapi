@@ -1,24 +1,16 @@
-from flask import Flask
-import requests
+from flask import Blueprint, Flask
 from typing import NamedTuple
 from flask import jsonify
 from flask import request
 import uuid
-import sqlalchemy
+from models.carta import MagicCard
 
-flask =Flask(__name__)
 
-class MagicCard(NamedTuple):
-    nome: str
-    cmc: int
-    texto: str
-    power: int
-    resistance: int
-    identificador: str
-
+#ROTAS
 cartas: list[MagicCard] = []
+cartinha_blueprint = Blueprint("cartinha", __name__)
 
-@flask.post("/cartinha")#create
+@cartinha_blueprint.post("/cartinha")#create
 def post():
     dicionario_cartinha:dict = request.get_json()
     nome= dicionario_cartinha["nome"]
@@ -29,7 +21,7 @@ def post():
     cartas.append(MagicCard(nome=nome, cmc=cmc, texto=texto, power=power, resistance=resistance, identificador=str(uuid.uuid4())))
     return jsonify({"msg":"deu certo"}), 201
 
-@flask.get("/cartinha")#read all
+@cartinha_blueprint.get("/cartinha")#read all
 def get_cartinha():
     listacartinha=[]
     for cartinha in cartas:
@@ -37,13 +29,14 @@ def get_cartinha():
         listacartinha.append(cartinha._asdict())
     return jsonify(cartas=listacartinha), 200
 
-@flask.get("/cartinha/<string:cartinha_id>")#read one
+@cartinha_blueprint.get("/cartinha/<string:cartinha_id>")#read one
 def get_cartinha_id(cartinha_id):
     for cartinha in cartas:
         if cartinha.identificador == cartinha_id:
             return jsonify(cartinha._asdict()), 200
-        
-@flask.put("/cartinha/<string:cartinha_id>")#update
+    return jsonify({"msg":"carta não existe"}), 404
+
+@cartinha_blueprint.put("/cartinha/<string:cartinha_id>")#update
 def update_cartinha_id(cartinha_id):
     dicionario_cartinha:dict = request.get_json()
     nomenovo = dicionario_cartinha["nome"]
@@ -57,12 +50,12 @@ def update_cartinha_id(cartinha_id):
             cartas.append(cartinhanova)
             cartas.remove(cartinha)
             return jsonify({"msg":"item alterado"}), 200
+    return jsonify({"msg":"carta não existe"}), 404
 
-@flask.delete("/cartinha/<string:cartinha_id>") #delete
+@cartinha_blueprint.delete("/cartinha/<string:cartinha_id>") #delete
 def delete_cartinha_id(cartinha_id):
     for cartinha in cartas:
         if cartinha.identificador == cartinha_id:
                 cartas.remove(cartinha)
                 return jsonify({"msg": "item apagado"}), 200
-
-flask.run()
+    return jsonify({"msg":"carta não existe"}), 404
