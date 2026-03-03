@@ -4,58 +4,76 @@ from flask import jsonify
 from flask import request
 import uuid
 from models.carta import MagicCard
+from database.database_gateway import CartinhaDBGateway
 
-
-#ROTAS
-cartas: list[MagicCard] = []
+gateway = CartinhaDBGateway()
 cartinha_blueprint = Blueprint("cartinha", __name__)
 
 @cartinha_blueprint.post("/cartinha")#create
 def post():
-    dicionario_cartinha:dict = request.get_json()
-    nome= dicionario_cartinha["nome"]
-    cmc= dicionario_cartinha["cmc"]
-    texto= dicionario_cartinha["texto"]
-    power= dicionario_cartinha["power"]
-    resistance= dicionario_cartinha["resistance"]
-    cartas.append(MagicCard(nome=nome, cmc=cmc, texto=texto, power=power, resistance=resistance, identificador=str(uuid.uuid4())))
-    return jsonify({"msg":"deu certo"}), 201
+    data = request.get_json()
+
+    card = MagicCard(
+        nome=data["nome"],
+        cmc=data["cmc"],
+        texto=data["texto"],
+        power=data["power"],
+        resistance=data["resistance"],
+        identificador=str(uuid.uuid4())
+    )
+
+    gateway.create_cartinha(card)
+
+    return jsonify({"msg": "deu certo"}), 201
 
 @cartinha_blueprint.get("/cartinha")#read all
 def get_cartinha():
-    listacartinha=[]
-    for cartinha in cartas:
-        cartinha._asdict()
-        listacartinha.append(cartinha._asdict())
-    return jsonify(cartas=listacartinha), 200
+    cartas = gateway.get_cartas()
+
+    lista = []
+    for c in cartas:
+        lista.append({
+            "identificador": c.identificador,
+            "nome": c.nome,
+            "cmc": c.cmc,
+            "texto": c.texto,
+            "power": c.power,
+            "resistance": c.resistance
+        })
+
+    return jsonify(lista), 200
 
 @cartinha_blueprint.get("/cartinha/<string:cartinha_id>")#read one
 def get_cartinha_id(cartinha_id):
-    for cartinha in cartas:
-        if cartinha.identificador == cartinha_id:
-            return jsonify(cartinha._asdict()), 200
-    return jsonify({"msg":"carta não existe"}), 404
+    c = gateway.get_cartinha_by_id(cartinha_id)
 
-@cartinha_blueprint.put("/cartinha/<string:cartinha_id>")#update
+    if not c:
+        return jsonify({"msg": "carta não existe"}), 404
+
+    return jsonify({
+        "identificador": c.identificador,
+        "nome": c.nome,
+        "cmc": c.cmc,
+        "texto": c.texto,
+        "power": c.power,
+        "resistance": c.resistance
+    }), 200
+
+@cartinha_blueprint.put("/cartinha/<string:cartinha_id>")#put/update
 def update_cartinha_id(cartinha_id):
-    dicionario_cartinha:dict = request.get_json()
-    nomenovo = dicionario_cartinha["nome"]
-    cmcnovo = dicionario_cartinha["cmc"]
-    textonovo = dicionario_cartinha["texto"]
-    powernovo = dicionario_cartinha["power"]
-    resistancenovo = dicionario_cartinha["resistence"]
-    for cartinha in cartas:
-        if cartinha.identificador == cartinha_id:
-            cartinhanova = cartinha._replace(nome=nomenovo, cmc=cmcnovo, texto=textonovo, power=powernovo, resistance=resistancenovo) 
-            cartas.append(cartinhanova)
-            cartas.remove(cartinha)
-            return jsonify({"msg":"item alterado"}), 200
-    return jsonify({"msg":"carta não existe"}), 404
+    data = request.get_json()
+    obj = gateway.update_cartinha_by_id(cartinha_id, data)
 
-@cartinha_blueprint.delete("/cartinha/<string:cartinha_id>") #delete
+    if not obj:
+        return jsonify({"msg": "carta não existe"}), 404
+
+    return jsonify({"msg": "item alterado"}), 200
+
+@cartinha_blueprint.delete("/cartinha/<string:cartinha_id>")#delete
 def delete_cartinha_id(cartinha_id):
-    for cartinha in cartas:
-        if cartinha.identificador == cartinha_id:
-                cartas.remove(cartinha)
-                return jsonify({"msg": "item apagado"}), 200
-    return jsonify({"msg":"carta não existe"}), 404
+    ok = gateway.delete_cartinha_by_id(cartinha_id)
+
+    if not ok:
+        return jsonify({"msg": "carta não existe"}), 404
+
+    return jsonify({"msg": "item apagado"}), 200
