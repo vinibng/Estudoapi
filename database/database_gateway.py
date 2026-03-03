@@ -1,5 +1,6 @@
 from ast import stmt
-from sqlalchemy import Engine, select
+from requests import Session
+from sqlalchemy import Engine, select, update, delete
 from sqlalchemy.orm  import sessionmaker
 from connector.dbfactory import get_database_engine
 from models.carta import MagicCard
@@ -35,15 +36,22 @@ class CartinhaDBGateway():
     def get_cartinha_by_id(self, magic_card_id:str):
         Session = sessionmaker(self.engine)
         with Session() as session:
-            stmt=select(CartinhaDao).where()
-            
-            session.commit()
+            cartinha = session.get(CartinhaDao , magic_card_id)
+            session.execute(cartinha).all()
         return 
             
 
     def update_cartinha_by_id(self,magic_card_id:str):
+        Session =sessionmaker(self.engine)
+        with Session() as session:
+            cartinha = session.get(CartinhaDao , magic_card_id)
+            stmt= update(CartinhaDao).where(cartinha).values()
+            session.execute(stmt)
         return 
 
 
     def delete_cartinha_by_id(self,magic_card_id:str):
+        with Session() as session:
+            stmt =select(CartinhaDao).where(CartinhaDao.identificador.in_([MagicCard]))
+            session.delete(CartinhaDao.identificador.session.get())
         return 
