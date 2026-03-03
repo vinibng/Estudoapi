@@ -1,57 +1,62 @@
-from ast import stmt
-from requests import Session
-from sqlalchemy import Engine, select, update, delete
-from sqlalchemy.orm  import sessionmaker
+from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 from connector.dbfactory import get_database_engine
-from models.carta import MagicCard
 from connector.cartinha_dao import CartinhaDao
+from models.carta import MagicCard
 
 
-class CartinhaDBGateway():
-    def __init__(self) -> None:
-        self.engine:Engine = get_database_engine()
+class CartinhaDBGateway:
 
+    def __init__(self):
+        self.engine = get_database_engine()
+        self.Session = sessionmaker(bind=self.engine)
 
-
-    def create_cartinha(self, magic_card:MagicCard):
-        Session = sessionmaker(self.engine)
-        with Session() as session:
-            CartinhaDao(
+    def create_cartinha(self, magic_card: MagicCard):
+        with self.Session() as session:
+            obj = CartinhaDao(
                 identificador=magic_card.identificador,
                 nome=magic_card.nome,
-                cmc= magic_card.cmc,
+                cmc=magic_card.cmc,
                 texto=magic_card.texto,
                 power=magic_card.power,
-                resistance= magic_card.resistance,
-            )            
+                resistance=magic_card.resistance,
+            )
+            session.add(obj) #esta adicionando
             session.commit()
 
     def get_cartas(self):
-        Session = sessionmaker(self.engine)
-        with Session() as session:
+        with self.Session() as session:
             stmt = select(CartinhaDao)
-            session.execute(stmt).all()
-        return
+            result = session.execute(stmt).scalars().all()
+            return result
 
-    def get_cartinha_by_id(self, magic_card_id:str):
-        Session = sessionmaker(self.engine)
-        with Session() as session:
-            cartinha = session.get(CartinhaDao , magic_card_id)
-            session.execute(cartinha).all()
-        return 
-            
+    def get_cartinha_by_id(self, magic_card_id: str):
+        with self.Session() as session:
+            return session.get(CartinhaDao, magic_card_id)
 
-    def update_cartinha_by_id(self,magic_card_id:str):
-        Session =sessionmaker(self.engine)
-        with Session() as session:
-            cartinha = session.get(CartinhaDao , magic_card_id)
-            stmt= update(CartinhaDao).where(cartinha).values()
-            session.execute(stmt)
-        return 
+    def update_cartinha_by_id(self, magic_card_id: str, data: dict):
+        with self.Session() as session:
+            obj = session.get(CartinhaDao, magic_card_id)
 
+            if not obj:
+                return None
 
-    def delete_cartinha_by_id(self,magic_card_id:str):
-        with Session() as session:
-            stmt =select(CartinhaDao).where(CartinhaDao.identificador.in_([MagicCard]))
-            session.delete(CartinhaDao.identificador.session.get())
-        return 
+            obj.nome = data["nome"]
+            obj.cmc = data["cmc"]
+            obj.texto = data["texto"]
+            obj.power = data["power"]
+            obj.resistance = data["resistance"]
+
+            session.commit()
+            return obj
+
+    def delete_cartinha_by_id(self, magic_card_id: str):
+        with self.Session() as session:
+            obj = session.get(CartinhaDao, magic_card_id)
+
+            if not obj:
+                return False
+
+            session.delete(obj)
+            session.commit()
+            return True
