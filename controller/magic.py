@@ -1,10 +1,10 @@
-from flask import Blueprint, Flask
-from typing import NamedTuple
-from flask import jsonify
-from flask import request
+from flask import jsonify, request, Blueprint
 import uuid
+from connector import cartinha_dao
+from controller.crud_controler import Controlador
 from models.carta import MagicCard
 from database.database_gateway import CartinhaDBGateway
+
 
 gateway = CartinhaDBGateway()
 cartinha_blueprint = Blueprint("cartinha", __name__)
@@ -28,52 +28,39 @@ def post():
 
 @cartinha_blueprint.get("/cartinha")#read all
 def get_cartinha():
-    cartas = gateway.get_cartas()
 
-    lista = []
-    for c in cartas:
-        lista.append({
-            "identificador": c.identificador,
-            "nome": c.nome,
-            "cmc": c.cmc,
-            "texto": c.texto,
-            "power": c.power,
-            "resistance": c.resistance
-        })
+    page = request.args.get("page", default=1, type=int)
+    offset = request.args.get("offset", default=5, type=int)
 
-    return jsonify(lista), 200
+    resultado = Controlador().get_card(page, offset)
+    return jsonify(resultado), 200
+    
 
-@cartinha_blueprint.get("/cartinha/<string:cartinha_id>")#read one
+@cartinha_blueprint.get("/cartinha/<string:cartinha_id>")
 def get_cartinha_id(cartinha_id):
-    c = gateway.get_cartinha_by_id(cartinha_id)
 
-    if not c:
+    carta_unica = Controlador().get_card_by_id(cartinha_id)
+
+    if not carta_unica:
         return jsonify({"msg": "carta não existe"}), 404
 
-    return jsonify({
-        "identificador": c.identificador,
-        "nome": c.nome,
-        "cmc": c.cmc,
-        "texto": c.texto,
-        "power": c.power,
-        "resistance": c.resistance
-    }), 200
+    return jsonify(carta_unica), 200
+
 
 @cartinha_blueprint.put("/cartinha/<string:cartinha_id>")#put/update
 def update_cartinha_id(cartinha_id):
-    data = request.get_json()
-    obj = gateway.update_cartinha_by_id(cartinha_id, data)
+   carta_arrumada =Controlador().update_card_by_id(cartinha_id)
 
-    if not obj:
-        return jsonify({"msg": "carta não existe"}), 404
+   if not carta_arrumada:
+       return jsonify({"msg": "carta não existe"}),404
 
-    return jsonify({"msg": "item alterado"}), 200
+   return jsonify({"msg": "item alterado"}),200
 
 @cartinha_blueprint.delete("/cartinha/<string:cartinha_id>")#delete
 def delete_cartinha_id(cartinha_id):
-    ok = gateway.delete_cartinha_by_id(cartinha_id)
+    carta_apagada =Controlador().delete_card_by_id(cartinha_id)
 
-    if not ok:
-        return jsonify({"msg": "carta não existe"}), 404
-
-    return jsonify({"msg": "item apagado"}), 200
+    if not carta_apagada:
+        return jsonify ({"msg": "carta não existe"})
+    
+    return jsonify({"msg":"item apagado"})
