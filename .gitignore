@@ -1,0 +1,13 @@
+__pycache__
+/venv
+/.vscode
+.env
+controller\__pycache__\crud_controler.cpython-313.pyc
+controller\__pycache__\magic.cpython-313.pyc
+database\__pycache__\database_gateway.cpython-313.pyc
+models\__pycache__\__init__.cpython-313.pyc
+models\__pycache__\carta.cpython-313.pyc
+connector\__pycache__\__init__.cpython-313.pyc
+connector\__pycache__\cartinha_dao.cpython-313.pyc
+connector\__pycache__\dbfactory.cpython-313.pyc
+connector\__pycache__\table_operations.cpython-313.pyc
