@@ -1,9 +1,10 @@
-from typing import NamedTuple
+from typing import Optional
+from pydantic import BaseModel
 
-class MagicCard(NamedTuple):
+class MagicCard(BaseModel):
     nome: str
     cmc: int
-    texto: str
+    texto: Optional[str] = None
     power: int
     resistance: int
     identificador: str
