@@ -1,7 +1,7 @@
 from flask import jsonify, request, Blueprint
 import uuid
 
-from controller.crud_controler import Controlador
+from controladores.crud_controler import Controlador
 from models.carta import MagicCard
 from database.database_gateway import CartinhaDBGateway
 
@@ -27,7 +27,7 @@ def get_cartinha():
     page = request.args.get("page", default=1, type=int)
     offset = request.args.get("offset", default=5, type=int)
 
-    resultado = Controlador().get_card(page, offset)
+    resultado = Controlador(gateway).get_card(page, offset)
 
     return jsonify(resultado), 200
 
@@ -35,7 +35,7 @@ def get_cartinha():
 @cartinha_blueprint.get("/cartinha/<string:cartinha_id>")
 def get_cartinha_id(cartinha_id):
 
-    carta_unica = Controlador().get_card_by_id(cartinha_id)
+    carta_unica = Controlador(gateway).get_card_by_id(cartinha_id)
 
     if not carta_unica:
         return jsonify({"msg": "carta não existe"}), 404
@@ -48,7 +48,7 @@ def update_cartinha_id(cartinha_id):
 
     data = request.get_json()
 
-    carta_arrumada = Controlador().update_card_by_id(cartinha_id, data)
+    carta_arrumada = Controlador(gateway).update_card_by_id(cartinha_id, data)
 
     if not carta_arrumada:
         return jsonify({"msg": "carta não existe"}), 404
@@ -59,7 +59,7 @@ def update_cartinha_id(cartinha_id):
 @cartinha_blueprint.delete("/cartinha/<string:cartinha_id>")
 def delete_cartinha_id(cartinha_id):
 
-    carta_apagada = Controlador().delete_card_by_id(cartinha_id)
+    carta_apagada = Controlador(gateway).delete_card_by_id(cartinha_id)
 
     if not carta_apagada:
         return jsonify({"msg": "carta não existe"}), 404

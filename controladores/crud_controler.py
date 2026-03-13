@@ -1,7 +1,9 @@
 from database.database_gateway import CartinhaDBGateway
-gateway = CartinhaDBGateway()
+
 
 class Controlador:
+    def __init__(self, db_gateway: CartinhaDBGateway) -> None:
+        self.db_gateway = db_gateway
 
     def _to_dict(self, c):
         return {
@@ -15,7 +17,7 @@ class Controlador:
 
     def get_card(self, page, offset):
 
-        cartas = gateway.get_cartas()
+        cartas = self.db_gateway.get_cartas()
 
         lista = [self._to_dict(c) for c in cartas]
 
@@ -35,7 +37,7 @@ class Controlador:
 
     def get_card_by_id(self, cartinha_id):
 
-        c = gateway.get_cartinha_by_id(cartinha_id)
+        c = self.db_gateway.get_cartinha_by_id(cartinha_id)
 
         if not c:
             return None
@@ -44,7 +46,7 @@ class Controlador:
 
     def update_card_by_id(self, cartinha_id, data):
 
-        obj = gateway.update_cartinha_by_id(cartinha_id, data)
+        obj = self.db_gateway.update_cartinha_by_id(cartinha_id, data)
 
         if not obj:
             return None
@@ -53,7 +55,7 @@ class Controlador:
 
     def delete_card_by_id(self, cartinha_id):
 
-        ok = gateway.delete_cartinha_by_id(cartinha_id)
+        ok = self.db_gateway.delete_cartinha_by_id(cartinha_id)
 
         if not ok:
             return None

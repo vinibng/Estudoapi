@@ -1,7 +1,7 @@
 from connector.dbfactory import get_database_engine
 from connector.cartinha_dao import CartinhaDao
 from flask import Flask
-from controller.magic import cartinha_blueprint
+from controladores.magic import cartinha_blueprint
 
 app =Flask(__name__)
 app.register_blueprint(cartinha_blueprint)

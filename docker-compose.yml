@@ -1,0 +1,19 @@
+services:
+  postgres-db:
+    image: postgres:18.2
+    command: ["postgres", "-c", "log_statement=all"]
+    volumes:
+      - Projeto-Estudo:/var/lib/postgresql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=MagicCard
+    healthcheck:
+      test: pg_isready -U root -d MagicCard
+      interval: 10s
+      timeout: 3s
+      retries: 5
+volumes:
+  Projeto-Estudo:

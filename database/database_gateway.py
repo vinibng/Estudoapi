@@ -6,6 +6,7 @@ from connector.cartinha_dao import CartinhaDao
 from models.carta import MagicCard
 
 
+
 class CartinhaDBGateway:
 
     def __init__(self):
