@@ -5,6 +5,6 @@ class MagicCard(BaseModel):
     nome: str
     cmc: int
     texto: Optional[str] = None
-    power: int
-    resistance: int
+    power: Optional[int] = None
+    resistance: Optional[int] =None
     identificador: str
