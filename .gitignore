@@ -13,3 +13,9 @@ connector\__pycache__\dbfactory.cpython-313.pyc
 connector\__pycache__\table_operations.cpython-313.pyc
 testes\.pytest_cache
 __pycache__
+dbfactory.cpython-313.pyc
+magic.cpython-3133.pyc
+.pytest_cache
+models\__pycache__
+__pycache__\*
+banco_de_dados.cpython-313.pyc
