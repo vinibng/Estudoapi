@@ -1,53 +1,38 @@
-import pytest
-from controladores.crud_controler import Controlador
-from database.database_gateway import CartinhaDBGateway
-from models.carta import MagicCard
+def test_post_cartinha(client):
+    payload = {
+        "nome": "carta teste",
+        "cmc": 1,
+        "texto": "algum texto",
+        "power": 2,
+        "resistance": 3
+    }
+
+    response = client.post("/cartinha", json=payload)
+
+    assert response.status_code == 201
+    assert "identificador" in response.json
 
 
-@pytest.fixture
-def carta():
-    return Controlador(CartinhaDBGatewayMock())
+def test_get_cartinhas(client):
+    response = client.get("/cartinha")
+
+    assert response.status_code == 200
+    assert "data" in response.json
 
 
-def test_get_card(carta: Controlador):
+def test_get_cartinha_by_id_not_found(client):
+    response = client.get("/cartinha/id_inexistente")
 
-    result = carta.get_card(1, 2)
-    assert result == {"page": "page", "offset": 1, "total": 2, "data": 1}
+    assert response.status_code == 404
 
-def test_get_card_id(carta:Controlador):
 
-    result = carta.get_card_by_id("goblin2")
-    assert result == MagicCard(
-                nome="Goblin2",
-                cmc=611,
-                texto="O goblin2",
-                power=662,
-                resistance=112,
-                identificador="goblin2",
-            )
+def test_update_cartinha_not_found(client):
+    response = client.put("/cartinha/id_inexistente", json={"nome": "novo"})
 
-class CartinhaDBGatewayMock(CartinhaDBGateway):
+    assert response.status_code == 404
 
-    def get_cartas(self):
-        return [
-            MagicCard(
-                nome="Goblin",
-                cmc=616,
-                texto="O goblin",
-                power=666,
-                resistance=111,
-                identificador="goblin",
-            ),
-            MagicCard(
-                nome="Goblin2",
-                cmc=611,
-                texto="O goblin2",
-                power=662,
-                resistance=112,
-                identificador="goblin2",
-            ),
-        ]
-    
 
-    def get_cartinha_by_id(self, magic_card_id: str):
-        return super().get_cartinha_by_id(magic_card_id)
+def test_delete_cartinha_not_found(client):
+    response = client.delete("/cartinha/id_inexistente")
+
+    assert response.status_code == 404
