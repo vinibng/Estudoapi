@@ -11,3 +11,5 @@ connector\__pycache__\__init__.cpython-313.pyc
 connector\__pycache__\cartinha_dao.cpython-313.pyc
 connector\__pycache__\dbfactory.cpython-313.pyc
 connector\__pycache__\table_operations.cpython-313.pyc
+testes\.pytest_cache
+__pycache__
